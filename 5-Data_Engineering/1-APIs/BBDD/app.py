@@ -1,0 +1,97 @@
+from flask import Flask, jsonify, request
+from datos_dummy import books
+
+app = Flask(__name__)
+app.config["DEBUG"] = True
+
+
+@app.route('/', methods=['GET'])
+def home():
+    return "<h1>Distant Reading Archive</h1><p>This site is a prototype API for distant reading of science fiction novels.</p>"
+
+# 1.Ruta para obtener todos los libros
+@app.route('/api/v0/resources/books/all', methods=['GET'])
+def get_all():
+    return jsonify(books) # jsonify nos hace que la respuesta sea bonita, y no una lista fea
+
+# 2.Ruta para obtener un libro concreto mediante su id como parámetro en la llamada
+@app.route('/api/v0/resources/book', methods=['GET'])
+def book_id():
+    results = []
+    if 'id' in request.args:
+        id = int(request.args['id'])
+        for book in books:
+            if book['id']==id:
+                results.append(book)
+        if results == []:
+            return "Book not found with the id requested"    
+        else:
+            return jsonify(results)
+    else:
+        return "No id field provided"
+
+
+# 3.Ruta para obtener un libro concreto mediante su título como parámetro en la llamada de otra forma
+@app.route('/api/v0/resources/book/<string:title>', methods=['GET'])
+def get_book_byname(title):
+    results = []
+    for book in books:
+        if book['title']==title:
+            results.append(book)
+    if results == []:
+        return "Title not found"
+    else:
+        return jsonify(results)
+
+
+
+# 4.Ruta para obtener un libro concreto mediante su título dentro del cuerpo de la llamada
+@app.route('/api/v1/resources/book', methods=['GET'])
+def title_byname():
+    results = []
+    if 'title' in request.args:
+        title=request.args["title"]
+        for book in books:
+            if book['title']==title:
+                results.append(book)
+        if results == []:
+            return "Book not found with the title requested"    
+        else:
+            return jsonify(results)
+    else:
+        return "No title field provided"
+
+
+
+
+# 5.Ruta para añadir un libro mediante parámetros en la llamada
+@app.route('/api/v1/resources/book/add', methods=['POST'])
+def add_book_body():
+    libro = request.get_json()
+    if ("title" in libro) and ("author" in libro):
+        id = max([book["id"] for book in books]) +1
+        title = libre["title"]
+        author = libro["author"]
+        first_sentence = libro.get("first_sentence","NA")
+        published = libro.get("published", "NA")
+
+        nuevo_libro = {"id": id,
+                       "title":title,
+                       "first_sentence": first_sentence,
+                       "published":published}
+        books.append(nuevo_libro)
+        return jsonify(books) # con esto sabemos si hemos subido el nuevo libro
+
+# 6.Ruta para añadir un libro de otra forma 1
+# @app.route('/api/v1/resources/book/add_parameters', methods=['POST'])
+
+
+# 7.Ruta para modificar un libro
+# @app.route('/api/v1/resources/book/update', methods=['PUT'])
+
+
+# 8.Ruta para eliminar un libro
+# @app.route('/api/v1/resources/book/delete', methods=['DELETE'])
+
+
+app.run()
