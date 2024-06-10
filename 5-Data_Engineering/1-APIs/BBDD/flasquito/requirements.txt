@@ -1,0 +1,7 @@
+pandas
+numpy
+flask
+datetime
+sqlite3
+pickle
+sqlalchemy
